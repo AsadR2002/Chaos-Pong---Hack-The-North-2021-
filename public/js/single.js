@@ -35,7 +35,7 @@ function preload ()
 
 function create ()
 {
-    timerText = this.add.text(600, 16, 'timer: 0', {fontSize: '32px', fill: '#fff'});
+    timerText = this.add.text(800, 16, '0', {fontSize: '32px', fill: '#fff'});
 
     
 
@@ -58,7 +58,7 @@ function create ()
 
     interval = setInterval(function(){
         timer += 1; 
-        timerText.setText('timer: ' + timer);
+        timerText.setText(timer);
         if(timer % 30 === 0)
         {
             numbBalls++;

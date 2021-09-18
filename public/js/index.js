@@ -21,8 +21,8 @@ var MIN_DANGER_ZONE = 300;
 var MAX_DANGER_ZONE = 700;
 
 // Min and max velocity variables
-var MIN_BALL_SPEED;
-var MAX
+var MIN_BALL_SPEED = 50;
+var MAX_BALL_SPEED = 400;
 
 var game = new Phaser.Game(config);
 
@@ -107,7 +107,8 @@ function createBall() {
     ball.refreshBody();
     ball.setBounce(1);
     ball.setCollideWorldBounds(true);
-    ball.setVelocityX(200);
+
+    ball.setVelocityX(get);
     ball.setVelocityY(100);
     ball.setCircle(256);
     ball.name = "ball1";
