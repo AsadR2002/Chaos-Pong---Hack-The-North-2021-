@@ -7,15 +7,21 @@ const path = require('path');
 // For multiplayer, use sockets
 var sockets = require('socket.io');
 
-// Global variables for reuse
+// Global variables for port usage
 var PORT = process.env.port || 3000;
 
 // Use public directory as source folder
-app.use('', express.static(path.join(__dirname, 'public')));
+var pub_dir = path.join(__dirname, 'public')
+app.use('', express.static(pub_dir));
 
 // On localhost:3000/welcome
 app.get('/welcome', function (req, res) {
     res.send('<b>Hello</b> welcome to my http server made with express');
+});
+
+// Test path to serve secondary page
+app.get('/single', function (req, res) {
+    res.sendFile(path.join(pub_dir, '/single.html'));
 });
 
 // start the server in the port 3000 !
@@ -29,17 +35,3 @@ app.listen(PORT, () => {
 
 
 
-
-/* // server.js
-const express = require('express');
-
-// Define Express App
-const app = express();
-const PORT = process.env.PORT || 8080;
-
-// Serve Static Assets
-app.use(express.static('public'));
-
-app.listen(PORT, () => {
-    console.log('Server connected at:', PORT);
-}); */
