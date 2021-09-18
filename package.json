@@ -1,0 +1,27 @@
+{
+  "name": "Hack-The-North-Chaos-Ball",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "dependencies": {
+    "express.js": "^1.0.0",
+    "nodemon": "^2.0.12",
+    "socket.io": "^4.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nick-Anthony/Hack-The-North-Chaos-Ball.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Nick-Anthony/Hack-The-North-Chaos-Ball/issues"
+  },
+  "homepage": "https://github.com/Nick-Anthony/Hack-The-North-Chaos-Ball#readme"
+}
