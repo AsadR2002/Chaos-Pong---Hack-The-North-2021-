@@ -1,18 +1,28 @@
 // Require express and create an instance of it
-var express = require('express');
-var app = express();
-var http = require('http');
+const express = require('express');
+const app = express();
+const http = require('http');
 const path = require('path');
 
 // For multiplayer, use sockets
-var sockets = require('socket.io');
+const server = http.createServer(app);
+const { Server } = require("socket.io")
+const io = new Server(server);
 
 // Global variables for port usage
-var PORT = process.env.port || 3000;
+var PORT = process.env.PORT || 3000;
 
 // Use public directory as source folder
 var pub_dir = path.join(__dirname, 'public')
 app.use('', express.static(pub_dir));
+
+// Test socket connection
+io.on('connection', (socket) => {
+    console.log('a user connected: ');
+    socket.on('disconnect', () => {
+      console.log('user disconnected');
+    });
+  });
 
 // On localhost:3000/welcome
 app.get('/welcome', function (req, res) {
@@ -24,14 +34,21 @@ app.get('/single', function (req, res) {
     res.sendFile(path.join(pub_dir, '/single.html'));
 });
 
+app.get('/multi', function (req, res) {
+    res.sendFile(path.join(pub_dir, 'multiplayer.html'));
+});
+
+app.get('/test', function (req, res) {
+    res.sendFile(path.join(pub_dir, 'test.html'));
+});
+
 // start the server in the port 3000 !
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log('Example app listening on port', PORT);
 });
 
-
-
-
-
-
-
+io.on('connection', (socket) => {
+    socket.on('chat message', (msg) => {
+      io.emit('chat message', msg);
+    });
+  });

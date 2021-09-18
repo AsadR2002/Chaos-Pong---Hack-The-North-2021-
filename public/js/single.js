@@ -1,13 +1,20 @@
 
+var pxwidth = 1776;
+var pxheight = 999;
+
 var config = {
     type: Phaser.CANVAS,
-    width: 1000,
-    height: 1000,
+    width: pxwidth,
+    height: pxheight,
     physics: {
         default: 'arcade',
         arcade: {
             debug: false
         }
+    },
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH        
     },
     scene: {
         preload: preload,
@@ -21,6 +28,9 @@ var game = new Phaser.Game(config);
 var timerText = ""; 
 var rightScoreText ="";
 var leftScoreText = ""; 
+var endGameText = ""; 
+const LEFTWIN = "Left Side has Won"; 
+const RIGHTWIN = "Right Side has Won";
 var timer = 0; 
 var interval; 
 var balls;
@@ -28,14 +38,22 @@ var paddles;
 var numbBalls = 0; 
 var leftSideScore = 0; 
 var rightSideScore = 0; 
+var paddleSpeed = 450;
+var ballsLeft = 0;
+var gameover = false; 
 
 // DANGER ZONE variables
-var MIN_DANGER_ZONE = 300;
-var MAX_DANGER_ZONE = 700;
-
+var MIN_X_DANGER_ZONE = 400
+var MIN_Y_DANGER_ZONE = 50;
+var MAX_X_DANGER_ZONE = pxwidth-MIN_Y_DANGER_ZONE;
+var MAX_Y_DANGER_ZONE = pxheight-MIN_Y_DANGER_ZONE;
 // Min and max velocity variables
-var MIN_BALL_SPEED = -300;
-var MAX_BALL_SPEED = 300;
+var MIN_BALL_SPEED = 100;
+var MAX_BALL_SPEED = 400;
+
+// Radius settings
+var MIN_BALL_RAD = 10;
+var MAX_BALL_RAD = 50;
 
 // Random number generation between min and max
 function getRandomInt(min, max) {
@@ -46,17 +64,24 @@ function getRandomInt(min, max) {
 
 function preload ()
 {
-    this.load.image('whiteBall', 'images/ball1.png');
-    this.load.image('whiteSquare', 'images/paddle.jpg');
-
+    this.load.image('whiteBall', 'images/ball1.png'); // ball
+    this.load.image('whiteSquare', 'images/paddle.jpg'); // paddle
+    this.load.image('fence', 'images/dashed line.png'); // middle line
 }
 
 
 function create ()
 {
-    timerText = this.add.text(500, 16, '0', {fontSize: '32px', fill: '#fff'});
-    rightScoreText = this.add.text(960, 16, '0', {fontSize: '32px', fill: '#fff'});
-    leftScoreText = this.add.text(25, 16, '0', {fontSize: '32px', fill: '#fff'});
+
+    // Create instance of socket?
+    //this.socket = io();
+
+    this.add.image(pxwidth/2, pxheight/2, 'fence');
+
+
+    timerText = this.add.text(pxwidth/2, 28, '0', {fontSize: '32px', fill: '#fff'}).setOrigin(0.5,0);
+    rightScoreText = this.add.text(pxwidth-30, 28, '0', {fontSize: '32px', fill: '#fff'}).setOrigin(0.5,0);
+    leftScoreText = this.add.text(30, 28, '0', {fontSize: '32px', fill: '#fff'}).setOrigin(0.5,0);
 
     balls = this.physics.add.group();
 
@@ -77,7 +102,7 @@ function create ()
         timerText.setText(timer);
         if(timer % 5 === 0)
         {
-            numbBalls++;
+            numbBalls++; 
             createBall(numbBalls);
         };
     }, 1000)
@@ -88,6 +113,26 @@ function create ()
 
 function update ()
 {
+    if(gameover)
+    {
+
+        let textDisplay; 
+
+        if(leftSideScore > rightSideScore)
+        {
+            textDisplay = LEFTWIN;
+        }
+    
+        else
+        {
+            textDisplay = RIGHTWIN;
+        }
+        
+        paddles.getChildren().forEach(paddle => paddle.destroy());
+        endGameText = this.add.text(pxwidth/2, 500, textDisplay, {fontSize: '100px', fill: '#fff'}).setOrigin(0.5,0);
+        
+        return; 
+    }
     
     
     cursors = this.input.keyboard.createCursorKeys();
@@ -102,21 +147,21 @@ function update ()
 
     if (cursors.up.isDown) {
         paddle = paddles.getChildren().find(v => v.name === "rightpaddle1");
-        paddle.setVelocityY(-200);
+        paddle.setVelocityY(-paddleSpeed);
     }
     else if (cursors.down.isDown) {
         paddle = paddles.getChildren().find(v => v.name === "rightpaddle1");
-        paddle.setVelocityY(200);
+        paddle.setVelocityY(paddleSpeed);
     } else {
         //paddles.setVelocityY(0);
     }
     if (cursors.left.isDown) {
         paddle = paddles.getChildren().find(v => v.name === "leftpaddle1");
-        paddle.setVelocityY(-200);
+        paddle.setVelocityY(-paddleSpeed);
     }
     else if (cursors.right.isDown) {
         paddle = paddles.getChildren().find(v => v.name === "leftpaddle1");
-        paddle.setVelocityY(200);
+        paddle.setVelocityY(paddleSpeed);
     } else {
         //paddles.setVelocityY(0);
     }
@@ -126,7 +171,7 @@ function update ()
 
     
     balls.getChildren().forEach(ball => {
-        if(ball.x <= 75 || ball.x >= 925)
+        if(ball.x <= 75 || ball.x >= pxwidth-75)
         {
             if(ball.x <= 75)
             {
@@ -141,14 +186,22 @@ function update ()
             }
 
             ball.destroy();
+            ballsLeft--;
         }
     });
+
+    if(ballsLeft <= 0) 
+    {
+        gameover = true; 
+        endGame();
+    }
 }
 
 function createBall(num) {
 
-    var x = getRandomInt(MIN_DANGER_ZONE, MAX_DANGER_ZONE);
-    var y = getRandomInt(MIN_DANGER_ZONE, MAX_DANGER_ZONE);
+    var x = getRandomInt(MIN_X_DANGER_ZONE, MAX_X_DANGER_ZONE);
+    var y = getRandomInt(MIN_Y_DANGER_ZONE, MAX_Y_DANGER_ZONE);
+    ballsLeft++;
 
     var ball = balls.create(x, y, 'whiteBall');
     ball.setScale(0.2);
@@ -159,8 +212,18 @@ function createBall(num) {
     //ball.setMaxVelocityX(MAX_BALL_SPEED);
     //ball.setMaxVelocityY(MAX_BALL_SPEED);
 
-    ball.setVelocityX(getRandomInt(MIN_BALL_SPEED, MAX_BALL_SPEED));
-    ball.setVelocityY(getRandomInt(MIN_BALL_SPEED, MAX_BALL_SPEED));
+    var xLR = getRandomInt(1, 3);
+    if (xLR === 2) {
+        xLR = -1;
+    }
+    ball.setVelocityX(xLR*getRandomInt(MIN_BALL_SPEED, MAX_BALL_SPEED));
+
+    var yLR = getRandomInt(1, 3);
+    if (yLR === 2) {
+        yLR = -1;
+    }
+    ball.setVelocityY(yLR*getRandomInt(MIN_BALL_SPEED, MAX_BALL_SPEED));
+
     ball.setCircle(256);
     ball.name = "ball"+num;
     ball.allowRotation = false;
@@ -177,17 +240,24 @@ function createPaddle(isLeft, num) {
         x = 100;
         namet = "leftpaddle"+num;
     } else {
-        x = 900;
+        x = pxwidth-100;
         namet = "rightpaddle"+num;
     }
     
     var y = 600;
 
     var paddle = paddles.create(x, y, 'whiteSquare');
-    paddle.setScale(0.1, 0.5);
+    paddle.setScale(0.05, 0.3);
     paddle.setBounce(0);
     paddle.setImmovable(true);
     paddle.setCollideWorldBounds(true);
     paddle.name = namet;
     paddle.refreshBody();
+}
+
+function endGame()
+{      
+    timerText.setText('');
+    clearInterval(interval);
+    
 }
