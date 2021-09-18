@@ -43,7 +43,7 @@ var ballsLeft = 0;
 var gameover = false; 
 
 // DANGER ZONE variables
-var MIN_X_DANGER_ZONE = 400
+var MIN_X_DANGER_ZONE = 500
 var MIN_Y_DANGER_ZONE = 50;
 var MAX_X_DANGER_ZONE = pxwidth-MIN_Y_DANGER_ZONE;
 var MAX_Y_DANGER_ZONE = pxheight-MIN_Y_DANGER_ZONE;
