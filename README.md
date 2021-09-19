@@ -1,6 +1,5 @@
-# Chaos-Pong---Hack-The-North-2021
+# Chaos-Pong - Hack The North 2021
 
-##Chaos Pong - Hack the North 2021##
 Introducing Chaos Pong! The very chaotic variant of the first game ever to be launched worldwide! 
 To start the game, head over to our amazingly named domain, chaospong.tech! 
 The game is a local 2 player game, the paddles are controlled using W, S or the up and down arrow keys. 
