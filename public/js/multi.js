@@ -1,4 +1,5 @@
 
+
 var pxwidth = 1776;
 var pxheight = 999;
 
@@ -77,12 +78,36 @@ function preload ()
     this.load.audio('background', 'sounds/mixkit-game-level-music-689.wav')
 }
 
-
 function create ()
 {
 
     // Create instance of socket?
     //this.socket = io();
+
+    var self = this;
+    this.socket = io();
+    this.socket.on('currentPlayers', (players) => {
+        Object.keys(players).forEach( (id) => {
+            if (players[id].playerId === self.socket.id) {
+                addPlayer(self, players[id]);
+            }
+        });
+    });
+
+    
+
+    this.socket.on('newPlayer', (playerInfo) => {
+        // add that player
+        // addOtherPlayers(self, playerInfo);
+    });
+
+    this.socket.on('disconnect', (playerId) => {
+        self.otherPlayers.getChildren().forEach((otherPlayer) => {
+            if (playerId == otherPlayer.playerId) {
+                otherPlayer.destroy();
+            }
+        });
+    });
 
     fence = this.add.image(pxwidth/2, pxheight/2, 'fence');
     paddleHit = this.sound.add('paddleHit', {volume: 0.8});
@@ -122,11 +147,6 @@ function create ()
             createBall(numbBalls);
         };
     }, 1000)
-
-
-
-    
-
 }
 
 function update ()
@@ -162,31 +182,28 @@ function update ()
 
         
         
-        var upK = this.input.keyboard.addKey('up');
-        var downK = this.input.keyboard.addKey('down');
-        var wK = this.input.keyboard.addKey('W');
-        var sK = this.input.keyboard.addKey('S');
+        cursors = this.input.keyboard.createCursorKeys();
         
 
         paddles.getChildren().forEach(paddle => paddle.setVelocityY(0));
 
         let paddle;
 
-        if (upK.isDown) {
+        if (cursors.up.isDown) {
             paddle = paddles.getChildren().find(v => v.name === "rightpaddle1");
             paddle.setVelocityY(-paddleSpeed);
         }
-        else if (downK.isDown) {
+        else if (cursors.down.isDown) {
             paddle = paddles.getChildren().find(v => v.name === "rightpaddle1");
             paddle.setVelocityY(paddleSpeed);
         } else {
             //paddles.setVelocityY(0);
         }
-        if (wK.isDown) {
+        if (cursors.left.isDown) {
             paddle = paddles.getChildren().find(v => v.name === "leftpaddle1");
             paddle.setVelocityY(-paddleSpeed);
         }
-        else if (sK.isDown) {
+        else if (cursors.right.isDown) {
             paddle = paddles.getChildren().find(v => v.name === "leftpaddle1");
             paddle.setVelocityY(paddleSpeed);
         } else {

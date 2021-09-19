@@ -2,13 +2,17 @@
 const express = require('express');
 const app = express();
 const http = require('http');
+const { SocketAddress } = require('net');
 const path = require('path');
 
 // For multiplayer, use sockets
 const server = http.createServer(app);
-const { Server } = require("socket.io")
+const { Server } = require("socket.io");
+const { createSecureContext } = require('tls');
 const io = new Server(server);
-
+var num_players = 0;
+var players = {};
+var bar = true;
 // Global variables for port usage
 var PORT = process.env.PORT || 3000;
 
@@ -17,10 +21,72 @@ var pub_dir = path.join(__dirname, 'public')
 app.use('', express.static(pub_dir));
 
 // Test socket connection
-io.on('connection', (socket) => {
+/*io.on('connection', (socket) => {
     console.log('a user connected: ');
+    players[socket.id] = {
+        y: 600,
+        left: bar,
+        playerId: socket.id
+    };
+    console.log(players)
+    bar = !bar;
+    socket.emit('currentPlayers', players);
+    
+    socket.broadcast.emit('newPlayer', players[socket.id]);
     socket.on('disconnect', () => {
-      console.log('user disconnected');
+        console.log('user disconnected');
+        delete players[socket.id];
+        // emit a message to all players to remove this player
+        io.emit('bye', socket.id);
+    });
+  });*/
+
+  io.on('connection', (socket) => {
+    console.log("A user has connected.");
+    
+    if (num_players < 2){
+        players[socket.id] = {
+            player_id: socket.id,
+            y: 600,
+            left: bar
+          };
+        bar = !bar
+        num_players += 1;
+
+    } else {
+      // No one can connect anymore, message saying this?
+      console.log("Current lobby is full, please wait for your turn to join");
+    }
+    console.log(num_players)
+    
+    // Create a paddle here
+    socket.emit('actualPlayers', players);
+    socket.broadcast.emit('new_player', players[socket.id]);
+
+    // When a player moves send the data to the other one
+  socket.on('player_moved', (movement_data) => {
+    player[socket.id].y = movement_data.y;
+    socket.broadcast.emit('paddle_moved', players[socket.id]);
+  });
+
+  socket.on('new_ball', (ball_data) => {
+    socket.emit('new_ball', ball_data);
+    socket.broadcast.emit('new_ball', ball_data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log("A user has disconnected");
+    delete players[socket.id];
+    socket.broadcast.emit('player_disconnect', socket.id);
+    num_players--;
+  });
+  });
+
+  // 
+  io.on("connection", (socket) => {
+    socket.on("join-room", (arg) => {
+      socket.join(arg);
+      socket.to(arg).emit("joined-room", socket.id.toString());
     });
   });
 
@@ -34,12 +100,23 @@ app.get('/single', function (req, res) {
     res.sendFile(path.join(pub_dir, '/single.html'));
 });
 
+// If there are less than 2 players, allow them to connect to the lobby
+// else keep them waiting
 app.get('/multi', function (req, res) {
-    res.sendFile(path.join(pub_dir, 'multiplayer.html'));
+    if (num_players < 2) {
+      res.sendFile(path.join(pub_dir, 'multiplayer.html'));
+    } else {
+        console.log("went full")
+      res.sendFile(path.join(pub_dir, 'too-many-players.html'));
+    }
 });
 
-app.get('/test', function (req, res) {
+app.get('/chat', function (req, res) {
     res.sendFile(path.join(pub_dir, 'test.html'));
+});
+
+app.get('/room', function (req, res) {
+    res.sendFile(path.join(pub_dir, 'room-landing.html'));
 });
 
 // start the server in the port 3000 !
