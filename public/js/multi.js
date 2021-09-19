@@ -53,6 +53,7 @@ var MIN_X_DANGER_ZONE = 400
 var MIN_Y_DANGER_ZONE = 50;
 var MAX_X_DANGER_ZONE = pxwidth-MIN_X_DANGER_ZONE;
 var MAX_Y_DANGER_ZONE = pxheight-MIN_Y_DANGER_ZONE;
+
 // Min and max velocity variables
 var MIN_BALL_SPEED = 100;
 var MAX_BALL_SPEED = 400;
@@ -75,38 +76,34 @@ function preload ()
     this.load.image('fence', 'images/dashed line.png'); // middle line
     this.load.audio('paddleHit', 'sounds/mixkit-quick-jump-arcade-game-239.wav');
     this.load.audio('ballHit', 'sounds/mixkit-explainer-video-game-alert-sweep-236.wav');
-    this.load.audio('background', 'sounds/mixkit-game-level-music-689.wav')
+    this.load.audio('background', 'sounds/mixkit-game-level-music-689.wav');
 }
 
 function create ()
 {
 
-    // Create instance of socket?
-    //this.socket = io();
+    this.io = io();
+    self = this;
 
-    var self = this;
-    this.socket = io();
-    this.socket.on('currentPlayers', (players) => {
-        Object.keys(players).forEach( (id) => {
-            if (players[id].playerId === self.socket.id) {
-                addPlayer(self, players[id]);
+    enemies = this.physics.add.group();
+    balls = this.physics.add.group();
+
+    this.io.on('actualPlayers', (players) => {
+        Object.keys(players).forEach((id) => {
+            if (players[id].player_id == this.io.id) {
+                createPlayer(self, players[id].x, players[id].y, players[id].left);
+            } else {
+                createOtherPaddles(self, players[id]);
             }
         });
     });
 
-    
-
-    this.socket.on('newPlayer', (playerInfo) => {
-        // add that player
-        // addOtherPlayers(self, playerInfo);
+    this.io.on('new_player', (pInfo) => {
+        createOtherPaddles(self.scene, pInfo);
     });
 
-    this.socket.on('disconnect', (playerId) => {
-        self.otherPlayers.getChildren().forEach((otherPlayer) => {
-            if (playerId == otherPlayer.playerId) {
-                otherPlayer.destroy();
-            }
-        });
+    this.io.on('new_ball', (ball_data) => {
+        new Ball(self.scene, ball_data.x, ball_data.y);
     });
 
     fence = this.add.image(pxwidth/2, pxheight/2, 'fence');
@@ -120,12 +117,7 @@ function create ()
     rightScoreText = this.add.text(pxwidth-30, 28, '0', {fontSize: '32px', fill: '#fff'}).setOrigin(0.5,0);
     leftScoreText = this.add.text(30, 28, '0', {fontSize: '32px', fill: '#fff'}).setOrigin(0.5,0);
 
-    balls = this.physics.add.group();
-
     createBall(numbBalls);
-
-
-    paddles = this.physics.add.group();
 
     createPaddle(false, 1);
     createPaddle(true, 1);
@@ -181,10 +173,12 @@ function update ()
     } //else {
 
         
-        
+        if (this.player_init == true) {
+            this.player.update();
+        }
+
         cursors = this.input.keyboard.createCursorKeys();
         
-
         paddles.getChildren().forEach(paddle => paddle.setVelocityY(0));
 
         let paddle;
@@ -243,36 +237,10 @@ function update ()
 }
 
 function createBall(num) {
-
+    ballsLeft++;
     var x = getRandomInt(MIN_X_DANGER_ZONE, MAX_X_DANGER_ZONE);
     var y = getRandomInt(MIN_Y_DANGER_ZONE, MAX_Y_DANGER_ZONE);
-    ballsLeft++;
-
-    var ball = balls.create(x, y, 'whiteBall');
-    ball.setScale(0.2);
-    ball.refreshBody();
-    ball.setBounce(1);
-    ball.setCollideWorldBounds(true);
-
-    //ball.setMaxVelocityX(MAX_BALL_SPEED);
-    //ball.setMaxVelocityY(MAX_BALL_SPEED);
-
-    var xLR = getRandomInt(1, 3);
-    if (xLR === 2) {
-        xLR = -1;
-    }
-    ball.setVelocityX(xLR*getRandomInt(MIN_BALL_SPEED, MAX_BALL_SPEED));
-
-    var yLR = getRandomInt(1, 3);
-    if (yLR === 2) {
-        yLR = -1;
-    }
-    ball.setVelocityY(yLR*getRandomInt(MIN_BALL_SPEED, MAX_BALL_SPEED));
-
-    ball.setCircle(256);
-    ball.name = "ball"+num;
-    ball.allowRotation = false;
-    ball.refreshBody();
+    new Ball(this.scene, 300, 300)
 }
 
 
@@ -331,3 +299,13 @@ function backButton()
 }
 
 ///game.destroy(true, false); to exit script
+
+function createPlayer(scene, x, y, isLeft) {
+    scene.player_init = true;
+    scene.player = new Paddle(scene, x, y, isLeft);
+}
+
+function createOtherPaddles(scene, enemy_info, isLeft) {
+    const enemy = new Paddle(scene, enemy_info.x, enemy_info.y, enemy_info.player_id, !isLeft);
+    //scene.enemies.add(enemy);
+}

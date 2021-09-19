@@ -12,6 +12,8 @@ const { createSecureContext } = require('tls');
 const io = new Server(server);
 var num_players = 0;
 var players = {};
+var balls = {};
+var ball_id = 0;
 var bar = true;
 // Global variables for port usage
 var PORT = process.env.PORT || 3000;
@@ -65,13 +67,32 @@ app.use('', express.static(pub_dir));
 
     // When a player moves send the data to the other one
   socket.on('player_moved', (movement_data) => {
+    player[socket.id].x = movement_data.x;
     player[socket.id].y = movement_data.y;
     socket.broadcast.emit('paddle_moved', players[socket.id]);
   });
 
   socket.on('new_ball', (ball_data) => {
+    console.log("New ball has been generated");
+    balls[ball_id] = {
+      id: ball_id,
+      x: 0,
+      y: 0,
+      cur_speed: 0
+    };
+
+    ball_id++;
+    
     socket.emit('new_ball', ball_data);
     socket.broadcast.emit('new_ball', ball_data);
+  });
+
+  socket.on('ball_moved', (ball_data) => {
+    balls[ball_data.id].x = ball_data.x;
+    balls[ball_data.id].y = ball_data.y;
+    balls[ball_data.id].speed = ball_data.speed;
+
+    socket.broadcast.emit('ball_moved', balls[ball_data.id]);
   });
 
   socket.on('disconnect', () => {

@@ -74,7 +74,7 @@ function preload ()
     this.load.image('fence', 'images/dashed line.png'); // middle line
     this.load.audio('paddleHit', 'sounds/mixkit-quick-jump-arcade-game-239.wav');
     this.load.audio('ballHit', 'sounds/mixkit-explainer-video-game-alert-sweep-236.wav');
-    this.load.audio('background', 'sounds/mixkit-game-level-music-689.wav')
+    this.load.audio('background', 'sounds/mixkit-game-level-music-689-short.wav')
 }
 
 
@@ -106,12 +106,29 @@ function create ()
     createPaddle(true, 1);
 
 
+    goals = this.physics.add.staticGroup();
+
+    var goal = goals.create(2, 0, 'whiteSquare').setOrigin(1,0);
+    goal.setScale(30);
+    goal.name = "goalL";
+    goal.setVisible(false);
+    goal.refreshBody();
+
+    goal = goals.create(pxwidth-2, 0, 'whiteSquare').setOrigin(0,0);
+    goal.setScale(30);
+    goal.name = "goalR";
+    goal.setVisible(false);
+    goal.refreshBody();
+
+
     this.physics.add.collider(balls, paddles, function () {
         paddleHit.play();
     });
     this.physics.add.collider(balls, balls, function () {
         ballHit.play();
     });
+    this.physics.add.collider(balls, goals, ballDelete);
+
 
     interval = setInterval(function(){
         timer += 1; 
@@ -196,7 +213,7 @@ function update ()
         // figure out a way to have it so that paddles stop when the button isn't being pressed.
         //add a function that will do the same stuff but for different paddle names and different keys (takes 3 parameters)
 
-        
+        /*
         balls.getChildren().forEach(ball => {
             if(ball.x <= 75 || ball.x >= pxwidth-75)
             {
@@ -222,6 +239,7 @@ function update ()
             gameover = true; 
             endGame();
         }
+        */
     //}
 }
 
@@ -232,7 +250,7 @@ function createBall(num) {
     ballsLeft++;
 
     var ball = balls.create(x, y, 'whiteBall');
-    ball.setScale(0.2);
+    ball.setScale((Math.random() * (0.5 - 0.02) + 0.02).toFixed(3));
     ball.refreshBody();
     ball.setBounce(1);
     ball.setCollideWorldBounds(true);
@@ -311,6 +329,25 @@ function backButton()
         location.href = "/";
     };
     document.body.appendChild(btn);
+}
+
+function ballDelete(ball, goal) {
+    ball.destroy();
+    ballsLeft--;
+    if (goal.name === "goalL") {
+        rightSideScore++;
+        rightScoreText.setText(rightSideScore);
+    }
+    else
+    {
+        leftSideScore++;
+        leftScoreText.setText(leftSideScore);
+    }
+    if(ballsLeft <= 0) 
+    {
+        gameover = true; 
+        endGame();
+    }
 }
 
 ///game.destroy(true, false); to exit script
