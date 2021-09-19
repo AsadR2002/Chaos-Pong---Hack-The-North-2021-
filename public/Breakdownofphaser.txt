@@ -1,0 +1,45 @@
+First, a config section
+then a preload section
+a create section (initially drawn and created)
+update section (manages game loop)
+
+EX.:
+
+var config = {
+    type: Phaser.AUTO, (Auto rendering)
+    width: [number of pixels wide],
+    height: [number of pixels high],
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: false
+        }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+
+function preload() {
+    this.load.image('[key]', '[path/location]');
+    //more of this
+}
+
+function create() {
+    this.add.image([x coord], [y coord], '[image key(look at preload)]');
+    //more of this
+    //Note: coord 0,0 is technically the middle pixel of the image
+    // images are layered in order of their lines of code 
+    walls = this.physics.add.staticGroup();
+    walls.create([x coord], [y coord], '[key]');
+
+    ball1 = this.physics.add.sprite(100, 450, 'dude');
+}
+
+function update() {
+
+}
+
+

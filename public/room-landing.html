@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="bootstrap-5.1.1-dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Room - Chaos Pong</title>
+  </head>
+  <!-- <body class="bg-dark"></body> -->
+  <body>
+    <div class="px-4 py-5 my-5 text-center">
+        <img class="d-block mx-auto mb-4" src="images/ball1.png" alt="" width="72" height="57">
+        <h1 class="display-5 fw-bold">Your room id:</h1>
+        <div class="col-lg-6 mx-auto">
+          <p class="lead mb-4">Ask your friend to use this room ID!</p>
+          <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <h1 id="roomid" class="display-5 fw-bold"></h1>
+        </div>
+        <p id="friend-id" class="lead mb-4"></p>
+        </div>
+      </div>
+
+    <!-- Socket JS? -->
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script> 
+    <script src='js/index.js'></script> 
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/room.js"></script>
+  </body>
+</html>
